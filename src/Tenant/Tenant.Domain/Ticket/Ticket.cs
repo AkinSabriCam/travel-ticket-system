@@ -10,6 +10,8 @@ public class Ticket : AggregateRoot<Guid>
     public DateTime DepartureDate { get; set; }
     public TicketStatus Status { get; set; }
     public List<TicketHistory> History { get; set; }
+    public Expedition.Expedition Expedition { get; set; }
+    public Passenger.Passenger Passenger { get; set; }
 
     public void AddHistory()
     {

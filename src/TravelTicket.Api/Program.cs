@@ -7,12 +7,17 @@ using Serilog;
 using StackExchange.Redis;
 using Tenant.Application.Commands.Expedition.CreateExpedition;
 using Tenant.Application.Commands.Passenger.CreatePassenger;
+using Tenant.Application.Commands.Ticket.CancelTicket;
+using Tenant.Application.Commands.Ticket.CreateTicket;
+using Tenant.Application.Commands.Ticket.PurchaseTicket;
 using Tenant.Application.Queries.Expedition.GetAllExpeditions;
 using Tenant.Application.Queries.Expedition.GetExpeditionById;
 using Tenant.Application.Queries.Expedition.SearchExpeditions;
 using Tenant.Application.Queries.Passenger.GetAllPassengers;
 using Tenant.Application.Queries.Passenger.GetPassengerById;
 using Tenant.Application.Queries.Passenger.SearchPassengers;
+using Tenant.Application.Queries.Ticket.GetAllTickets;
+using Tenant.Application.Queries.Ticket.GetTicketById;
 using Tenant.Infrastructure;
 using Tenant.Infrastructure.Redis;
 
@@ -23,7 +28,7 @@ builder.Services.MasterRegister(builder.Configuration);
 builder.Host.UseSerilog();
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
-    .WriteTo.Seq("http://localhost:5341", apiKey:"9idvYVCxVG73hWi3sf9V")
+    .WriteTo.Seq("http://localhost:5341", apiKey: "9idvYVCxVG73hWi3sf9V")
     .MinimumLevel.Information()
     .CreateLogger();
 
@@ -87,10 +92,25 @@ app.MapPost("api/tenants",
     async ([FromServices] IMediator mediator, [FromBody] CreateTenantCommand command) =>
         await mediator.Send(command));
 
-app.MapGet("mydepp", () =>
-        Console.WriteLine("this is handling"));
+app.MapGet("api/ticket", async (IMediator mediator) => { await mediator.Send(new GetAllTicketsQuery()); });
+
+app.MapGet("api/ticket/{id:guid}",
+    async (Guid id, [FromServices] IMediator mediator) => { await mediator.Send(new GetTicketByIdQuery(id)); });
+
+app.MapPost("api/ticket",
+        async (IMediator mediator, [FromBody] CreateTicketCommand command) => await mediator.Send(command))
+    .RequireAuthorization();
+
+app.MapPost("api/ticket/{id:guid}/purchase",
+        async (IMediator mediator, Guid id) => await mediator.Send(new PurchaseTicketCommand(id)))
+    .RequireAuthorization();
+
+app.MapPost("api/ticket/{id:guid}/cancel",
+        async (IMediator mediator, Guid id) => await mediator.Send(new CancelTicketCommand(id)))
+    .RequireAuthorization();
 
 #endregion
+
 app.UseCookiePolicy();
 app.UseAuthentication();
 app.UseAuthorization();
