@@ -9,6 +9,7 @@ using Master.Infrastructure.AppServices;
 using Master.Infrastructure.EfCore;
 using Master.Infrastructure.EfCore.Repositories;
 using Master.Infrastructure.HttpServices;
+using Master.Infrastructure.Keycloak;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -46,7 +47,7 @@ public static class StartupRegister
         });
 
         services.Configure<KeycloakIdentitySettings>(configuration.GetSection("KeycloakIdentity"));
-        services.AddScoped<IIdentityHttpService, IdentityHttpService>();
+        services.AddScoped<IIdentityHttpService, KeycloakHttpService>();
 
     }
 }
