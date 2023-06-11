@@ -1,0 +1,35 @@
+﻿services:
+ 
+ 
+  redis:
+    image: "redis:latest"
+    container_name: "redis"
+ 
+  posgresql:
+    image: "postgres:latest"
+    container_name: "posgresql"
+    environment:
+      POSTGRES_USER: "dbadmin"
+      POSTGRES_PASSWORD: "dbadmin"
+      POSTGRES_DB: "travelticketdb"
+    ports:
+      - "5433:5432"
+ 
+  serilog-seq:
+    image: "datalust/seq:latest"
+    container_name: "serilog-seq"
+    ports:
+      - "5341"
+    environment:
+      ACCEPT_EULA: "Y"
+ 
+  keycloak:
+    image: "quay.io/keycloak/keycloak:21.0.2"
+    container_name: "keycloak"
+    environment:
+      KEYCLOAK_ADMIN: "admin"
+      KEYCLOAK_ADMIN_PASSWORD: "admin"
+    command:
+      - start-dev
+    ports:
+      - "6743:8080"
