@@ -8,10 +8,18 @@ namespace Tenant.Infrastructure.EfCore.TypeConfigurations;
 
 public class TicketTypeConfiguration : IEntityTypeConfiguration<Ticket>
 {
+    private readonly Guid _tenantId;
+
+    public TicketTypeConfiguration(Guid tenantId)
+    {
+        _tenantId = tenantId;
+    }
+
     public void Configure(EntityTypeBuilder<Ticket> builder)
     {
         builder.ToTable("tickets");
         builder.HasKey(x => x.Id);
+        builder.HasQueryFilter(x => x.TenantId == _tenantId && !x.IsDeleted);
 
         builder.Property(x => x.Status).HasConversion<string>();
 

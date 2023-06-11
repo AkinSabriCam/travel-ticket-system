@@ -9,6 +9,6 @@ public class GetTicketByIdQuery : IRequest<TicketDto>
 
     public GetTicketByIdQuery(Guid id)
     {
-        Id = Id;
+        Id = id;
     }
 }

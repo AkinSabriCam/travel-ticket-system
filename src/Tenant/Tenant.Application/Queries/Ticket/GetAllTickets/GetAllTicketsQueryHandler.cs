@@ -14,6 +14,6 @@ public class GetAllTicketsQueryHandler : IRequestHandler<GetAllTicketsQuery, Lis
 
     public Task<List<TicketDto>> Handle(GetAllTicketsQuery request, CancellationToken cancellationToken)
     {
-        return _repository.Get(TicketDto.GetProjection());
+       return _repository.Get(TicketDto.GetProjection());
     }
 }

@@ -31,12 +31,12 @@ public class TenantDbContext : DbContext
        modelBuilder.ApplyConfiguration(new PassengerTypeConfiguration(TenantId));
        modelBuilder.ApplyConfiguration(new TenantTypeConfiguration());
        modelBuilder.ApplyConfiguration(new UserTypeConfiguration());
-       modelBuilder.ApplyConfiguration(new TicketTypeConfiguration());
+       modelBuilder.ApplyConfiguration(new TicketTypeConfiguration(TenantId));
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
     {
-        foreach (var entry in ChangeTracker.Entries<AggregateRoot>())
+        foreach (var entry in ChangeTracker.Entries<IModifiableEntity>())
         {
             if (entry.State == EntityState.Added)
             {
