@@ -92,10 +92,13 @@ app.MapPost("api/tenants",
     async ([FromServices] IMediator mediator, [FromBody] CreateTenantCommand command) =>
         await mediator.Send(command));
 
-app.MapGet("api/ticket", async (IMediator mediator) => { await mediator.Send(new GetAllTicketsQuery()); });
+app.MapGet("api/ticket", async (IMediator mediator) => { await mediator.Send(new GetAllTicketsQuery()); })
+    .RequireAuthorization();
 
 app.MapGet("api/ticket/{id:guid}",
-    async (Guid id, [FromServices] IMediator mediator) => { await mediator.Send(new GetTicketByIdQuery(id)); });
+        async (Guid id, [FromServices] IMediator mediator) => { await mediator.Send(new GetTicketByIdQuery(id)); })
+    .RequireAuthorization();
+
 
 app.MapPost("api/ticket",
         async (IMediator mediator, [FromBody] CreateTicketCommand command) => await mediator.Send(command))

@@ -14,15 +14,11 @@ public class PassengerDomainService : IPassengerDomainService
 
     public async Task<Result<Passenger>> Create(CreatePassengerDto dto)
     {
-        var entity = new Passenger()
-        {
-            ExpeditionId = dto.ExpeditionId
-        };
+        var entity = new Passenger();
         var result = Result<Passenger>.Ok(entity);
         result.Combine(entity.SetFirstName(dto.FirstName));
         result.Combine(entity.SetLastName(dto.LastName));
         result.Combine(entity.SetIdentity(dto.Identity));
-        result.Combine(entity.SetSeatNumber(dto.SeatNumber));
 
         if (!result.IsSuccess())
             return result;
@@ -38,7 +34,6 @@ public class PassengerDomainService : IPassengerDomainService
         result.Combine(entity.SetFirstName(dto.FirstName));
         result.Combine(entity.SetLastName(dto.LastName));
         result.Combine(entity.SetIdentity(dto.Identity));
-        result.Combine(entity.SetSeatNumber(dto.SeatNumber));
 
         if (result.IsSuccess())
             await _passengerRepository.Update(entity, entity.Id);

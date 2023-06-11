@@ -31,8 +31,13 @@ public class TicketDomainService : ITicketDomainService
             Price = expedition.UnitPrice
         };
 
-        await _ticketRepository.Create(entity);
-        return Result<Ticket>.Ok(entity);
+        var result = Result<Ticket>.Ok(entity);
+        result.Combine(entity.SetSeatNumber(createDto.SeatNumber));
+        
+        if(result.IsSuccess())
+            await _ticketRepository.Create(entity);
+
+        return result;
     }
 
     public async Task<Result> Purchase(Guid id)

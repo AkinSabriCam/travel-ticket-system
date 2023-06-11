@@ -8,8 +8,6 @@ public class PassengerDto
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Identity { get; set; }
-    public string SeatNumber { get; set; }
-    public Guid ExpeditionId { get; set; }
     
     public static Expression<Func<Domain.Passenger.Passenger, PassengerDto>> GetProjection()
     {
@@ -19,8 +17,6 @@ public class PassengerDto
             Identity = x.Identity,
             FirstName = x.FirstName,
             LastName = x.LastName,
-            SeatNumber = x.SeatNumber,
-            ExpeditionId = x.ExpeditionId,
         };
     }
 }

@@ -15,11 +15,13 @@ public class TicketTypeConfiguration : IEntityTypeConfiguration<Ticket>
 
         builder.Property(x => x.Status).HasConversion<string>();
 
-        builder.HasOne<Passenger>()
-            .WithMany(x => x.Tickets).HasForeignKey(x => x.PassengerId);
+        builder.HasOne(x => x.Passenger)
+            .WithMany(x => x.Tickets)
+            .HasForeignKey(x => x.PassengerId);
 
-        builder.HasOne<Expedition>()
-            .WithMany(x => x.Tickets).HasForeignKey(x => x.ExpeditionId).IsRequired(false);
+        builder.HasOne(x => x.Expedition)
+            .WithMany(x => x.Tickets)
+            .HasForeignKey(x => x.ExpeditionId).IsRequired(false);
 
         builder.OwnsMany(x => x.History, y =>
         {

@@ -15,6 +15,7 @@ public class TicketDto
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Identity { get; set; }
+    public string SeatNumber { get; set; }
     
     
     public static Expression<Func<Domain.Ticket.Ticket, TicketDto>> GetProjection()
@@ -30,7 +31,8 @@ public class TicketDto
             VehicleNo = x.Expedition.VehicleNo,
             FirstName = x.Passenger.FirstName,
             LastName = x.Passenger.LastName,
-            Identity = x.Passenger.Identity
+            Identity = x.Passenger.Identity,            
+            SeatNumber = x.SeatNumber,
         };
     }
 }
