@@ -20,7 +20,7 @@ public class MasterUnitOfWork : IMasterUnitOfWork
         return _masterDbContext.SaveChangesAsync();
     }
 
-    public async Task InvokeInATransactionScope(Func<Task> action)
+    public async Task InvokeInADatabaseTransaction(Func<Task> action)
     {
         await using var dbTransaction = await _masterDbContext.Database.BeginTransactionAsync();
         try

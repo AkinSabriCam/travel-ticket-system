@@ -1,4 +1,4 @@
-﻿namespace Master.Infrastructure.HttpServices;
+﻿namespace Master.Infrastructure.Keycloak;
 
 public class KeycloakIdentitySettings
 {
@@ -8,5 +8,5 @@ public class KeycloakIdentitySettings
     public string Password { get; set; }
     public string UserEndPoint { get; set; }
     public string AdminLoginEndPoint { get; set; }
-
+    public string Audience { get; set; }
 }

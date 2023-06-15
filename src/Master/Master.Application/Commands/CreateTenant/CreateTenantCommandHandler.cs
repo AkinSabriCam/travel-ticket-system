@@ -38,6 +38,7 @@ public class CreateTenantCommandHandler : IRequestHandler<CreateTenantCommand, T
         var result = await _tenantDomainService.Create(createTenantDto, userId);
 
         result.ValidateAndThrow();
+        
         await LocalUserContext.SetUser(new LocalUser()
         {
             TenantCode = result.Value.Code,

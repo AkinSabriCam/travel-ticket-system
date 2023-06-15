@@ -1,10 +1,8 @@
-﻿using System.Net.Http.Headers;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using Master.Application.HttpServices;
 using Master.Application.HttpServices.RequestModels;
 using Master.Application.HttpServices.ResponseModels;
-using Master.Infrastructure.HttpServices;
 using Microsoft.Extensions.Options;
 
 namespace Master.Infrastructure.Keycloak;
@@ -13,8 +11,8 @@ public class KeycloakHttpService : IIdentityHttpService
 {
     private readonly IHttpClientFactory _httpFactory;
     private readonly KeycloakIdentitySettings _keycloakIdentitySettings;
-    private const string GroupName = "travel_ticket_system_group";
-    private static Dictionary<string, string> Groups => new() { { GroupName, "9b992d26-5ced-401f-8ec0-9a6254ef1fb9" } };
+    private const string GroupName = "BackOffice";
+    private static Dictionary<string, string> Groups => new() { { GroupName, "c203d2dd-85f9-491b-af7d-5410ac2c8e6f" } };
 
     public KeycloakHttpService(IHttpClientFactory httpFactory,
         IOptions<KeycloakIdentitySettings> keycloakIdentitySettings)
@@ -29,14 +27,11 @@ public class KeycloakHttpService : IIdentityHttpService
         var token = await GetToken(client);
 
         await CreateUser(requestModel, client, token);
-        var result = await GetUser(requestModel.Email, client);
-        var userResponse =
-            JsonSerializer.Deserialize<List<UserResponseModel>>(await result.Content.ReadAsStringAsync());
-        var userId = userResponse.FirstOrDefault()?.Id;
+        var users = await GetUser(requestModel.Email, client);
         var groupId = Groups.FirstOrDefault(x => x.Key.Equals(GroupName)).Value;
 
-        await SetUserPassword(client, token, password, userId);
-        await AddGroup(client, token, groupId, userId);
+        await SetUserPassword(client, token, password, users.First().Id);
+        await AddGroup(client, token, groupId, users.First().Id);
     }
 
     private async Task SetUserPassword(HttpClient client, string token, string password, string userId)
@@ -46,8 +41,8 @@ public class KeycloakHttpService : IIdentityHttpService
         var putUserRequest = new HttpRequestMessage(HttpMethod.Put, url);
         putUserRequest.Headers.Add("Authorization", $"Bearer {token}");
         var setPasswordRequest = new PasswordRequestModel() { Value = password };
-        putUserRequest.Content = new StringContent(JsonSerializer.Serialize(setPasswordRequest), Encoding.UTF8);
-        putUserRequest.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        putUserRequest.Content =
+            new StringContent(JsonSerializer.Serialize(setPasswordRequest), Encoding.UTF8, "application/json");
 
         var result = await client.SendAsync(putUserRequest);
 
@@ -71,28 +66,33 @@ public class KeycloakHttpService : IIdentityHttpService
         var url = $"{_keycloakIdentitySettings.BaseUrl}/{_keycloakIdentitySettings.UserEndPoint}";
         var createUserRequest = new HttpRequestMessage(HttpMethod.Post, url);
 
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
         createUserRequest.Headers.Add("Authorization", $"Bearer {token}");
-        createUserRequest.Content = new StringContent(JsonSerializer.Serialize(requestModel), Encoding.UTF8);
-        createUserRequest.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        createUserRequest.Content =
+            new StringContent(JsonSerializer.Serialize(requestModel), Encoding.UTF8, "application/json");
         var result = await client.SendAsync(createUserRequest);
 
         if (!result.IsSuccessStatusCode)
             throw new Exception("Could not create user in Keycloak Identity System");
     }
 
-    private async Task<HttpResponseMessage> GetUser(string email, HttpClient client)
+    private async Task<List<UserResponseModel>> GetUser(string email, HttpClient client)
     {
         var token = await GetToken(client);
         var url = $"{_keycloakIdentitySettings.UserEndPoint}/?email={email}";
         var getUserRequest = new HttpRequestMessage(HttpMethod.Get, url);
         getUserRequest.Headers.Add("Authorization", $"Bearer {token}");
+
         var result = await client.SendAsync(getUserRequest);
 
         if (!result.IsSuccessStatusCode)
-            throw new Exception("Could not find user in Keycloak Identity System after creating the user");
+            throw new Exception("Could not get user in Keycloak Server!");
 
-        return result;
+        var contentAsString = await result.Content.ReadAsStringAsync();
+        if (string.IsNullOrEmpty(contentAsString))
+            throw new Exception("Could not find any user with this email in Keycloak Server");
+
+
+        return JsonSerializer.Deserialize<List<UserResponseModel>>(contentAsString);
     }
 
     private async Task<string> GetToken(HttpClient client)

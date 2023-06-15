@@ -3,5 +3,5 @@
 public interface IMasterUnitOfWork
 {
     Task SaveChangesAsync();
-    Task InvokeInATransactionScope(Func<Task> action);
+    Task InvokeInADatabaseTransaction(Func<Task> action);
 }

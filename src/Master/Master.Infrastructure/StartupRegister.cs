@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Net.Http.Headers;
+using System.Reflection;
 using Master.Application.Abstraction;
 using Master.Application.Commands.CreateTenant;
 using Master.Application.HttpServices;
@@ -8,7 +9,6 @@ using Master.Domain.User;
 using Master.Infrastructure.AppServices;
 using Master.Infrastructure.EfCore;
 using Master.Infrastructure.EfCore.Repositories;
-using Master.Infrastructure.HttpServices;
 using Master.Infrastructure.Keycloak;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +44,7 @@ public static class StartupRegister
             var scope = services.BuildServiceProvider().CreateScope();
             var keycloakIdentitySettings = scope.ServiceProvider.GetService<IOptions<KeycloakIdentitySettings>>();
             httpClient.BaseAddress = new Uri(keycloakIdentitySettings.Value.BaseUrl);
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         });
 
         services.Configure<KeycloakIdentitySettings>(configuration.GetSection("KeycloakIdentity"));

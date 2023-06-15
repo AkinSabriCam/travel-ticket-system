@@ -1,8 +1,10 @@
 using Master.Application.Commands.CreateTenant;
 using Master.Infrastructure;
+using Master.Infrastructure.Keycloak;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using StackExchange.Redis;
 using Tenant.Application.Commands.Expedition.CreateExpedition;
@@ -35,25 +37,29 @@ Log.Logger = new LoggerConfiguration()
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, o =>
     {
-        o.MetadataAddress = "http://localhost:6743/realms/travel_ticket/.well-known/openid-configuration";
-        o.Authority = "http://localhost:6743/realms/";
-        o.Audience = "travel_ticket_system_resource";
+        var baseUrl = builder.Configuration.GetSection("KeycloakIdentity:BaseUrl").Value;
+        var audience = builder.Configuration.GetSection("KeycloakIdentity:Audience").Value;
+        o.MetadataAddress = $"{baseUrl}/realms/travel_ticket/.well-known/openid-configuration";
+        o.Authority = $"{baseUrl}/realms/";
         o.RequireHttpsMetadata = false;
+        o.TokenValidationParameters = new TokenValidationParameters()
+        {
+            RequireAudience = true,
+            ValidAudience = audience,
+        };
     });
 
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
-builder.Services.Configure<RedisSettings>(builder.Configuration.GetSection("Redis"));
 
-var redisHost = builder.Configuration.GetValue<string>("RedisSettings:Host");
-var redisPort = builder.Configuration.GetValue<int>("RedisSettings:Port");
+builder.Services.Configure<RedisSettings>(builder.Configuration.GetSection("RedisSettings"));
+var redisHost = builder.Configuration.GetSection("RedisSettings:Host").Value;
+var redisPort = builder.Configuration.GetSection("RedisSettings:Port").Value;
 var connectionMultiplexer = ConnectionMultiplexer.Connect(new ConfigurationOptions
 {
     EndPoints = { $"{redisHost}:{redisPort}" },
     AbortOnConnectFail = false,
 });
-
-
 builder.Services.AddSingleton<IConnectionMultiplexer>(connectionMultiplexer);
 
 var app = builder.Build();
