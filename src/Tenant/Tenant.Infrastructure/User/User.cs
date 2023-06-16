@@ -51,6 +51,15 @@ public class User : IUser
         set { }
     }
 
+    public bool IsMemberOfTheGroup
+    {
+        get =>
+            LocalUserContext.GetUser() != null
+                ? LocalUserContext.GetUser().IsMemberOfTheGroup
+                : IsAuthenticated() && _httpContext.User.IsMemberOfTheGroup();
+        set{}
+    }
+
     public bool IsAuthenticated()
     {
         return _httpContext != null && _httpContext.User.Identity.IsAuthenticated;

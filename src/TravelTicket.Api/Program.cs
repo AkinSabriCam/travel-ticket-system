@@ -3,6 +3,7 @@ using Master.Infrastructure;
 using Master.Infrastructure.Keycloak;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -22,6 +23,7 @@ using Tenant.Application.Queries.Ticket.GetAllTickets;
 using Tenant.Application.Queries.Ticket.GetTicketById;
 using Tenant.Infrastructure;
 using Tenant.Infrastructure.Redis;
+using TravelTicket.Api.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.TenantRegister(builder.Configuration);
@@ -61,6 +63,7 @@ var connectionMultiplexer = ConnectionMultiplexer.Connect(new ConfigurationOptio
     AbortOnConnectFail = false,
 });
 builder.Services.AddSingleton<IConnectionMultiplexer>(connectionMultiplexer);
+builder.Services.AddScoped<IAuthorizationHandler, AuthorizationHandler>();
 
 var app = builder.Build();
 

@@ -1,5 +1,4 @@
 ﻿using System.Net.Http.Headers;
-using System.Reflection;
 using Master.Application.Abstraction;
 using Master.Application.Commands.CreateTenant;
 using Master.Application.HttpServices;
@@ -10,7 +9,6 @@ using Master.Infrastructure.AppServices;
 using Master.Infrastructure.EfCore;
 using Master.Infrastructure.EfCore.Repositories;
 using Master.Infrastructure.Keycloak;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,8 +35,6 @@ public static class StartupRegister
         services.AddScoped<ITenantDomainService, TenantDomainService>();
         services.AddScoped<ITenantAppService, TenantAppService>();
 
-        //services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestLoggingPipeline<,>));
-        
         services.AddHttpClient("keycloak", httpClient =>
         {
             var scope = services.BuildServiceProvider().CreateScope();
