@@ -4,19 +4,19 @@ using Tenant.Domain.Expedition;
 
 namespace Tenant.Infrastructure.EfCore.TypeConfigurations;
 
-public class ExpeditionTypeConfiguration : IEntityTypeConfiguration<Expedition>
+public class ExpeditionTypeConfiguration : BaseTypeConfiguration<Expedition>
 {
     private readonly Guid _tenantId;
 
-    public ExpeditionTypeConfiguration(Guid tenantId)
+    public ExpeditionTypeConfiguration(Guid tenantId) : base(tenantId)
     {
         _tenantId = tenantId;
     }
 
-    public void Configure(EntityTypeBuilder<Expedition> builder)
+    public override void Configure(EntityTypeBuilder<Expedition> builder)
     {
-        builder.HasQueryFilter(x => x.TenantId == _tenantId && !x.IsDeleted);
-
+        base.Configure(builder);
+        
         builder.ToTable("expeditions");
         builder.HasKey(x => x.Id);
 

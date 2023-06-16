@@ -1,14 +1,13 @@
 using Master.Application.Commands.CreateTenant;
 using Master.Infrastructure;
-using Master.Infrastructure.Keycloak;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
-using StackExchange.Redis;
 using Tenant.Application.Commands.Expedition.CreateExpedition;
+using Tenant.Application.Commands.Expedition.UpdateExpedition;
 using Tenant.Application.Commands.Passenger.CreatePassenger;
 using Tenant.Application.Commands.Ticket.CancelTicket;
 using Tenant.Application.Commands.Ticket.CreateTicket;
@@ -22,8 +21,9 @@ using Tenant.Application.Queries.Passenger.SearchPassengers;
 using Tenant.Application.Queries.Ticket.GetAllTickets;
 using Tenant.Application.Queries.Ticket.GetTicketById;
 using Tenant.Infrastructure;
-using Tenant.Infrastructure.Redis;
+using Tenant.Infrastructure.RabbitMq;
 using TravelTicket.Api.Configuration;
+using TravelTicket.Api.EventHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.TenantRegister(builder.Configuration);
@@ -51,6 +51,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMqSettings"));
+
+builder.Services.AddHostedService<ExpeditionEventHandler>();
+
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuthorizationHandler, AuthorizationHandler>();
@@ -71,6 +75,10 @@ app.MapPost("api/expedition",
 
 app.MapPost("api/expedition/search",
         async (IMediator mediator, [FromBody] SearchExpeditionsQuery query) => await mediator.Send(query))
+    .RequireAuthorization();
+
+app.MapPut("api/expedition/{id:guid}",
+        async (IMediator mediator, Guid id, [FromBody] UpdateExpeditionCommand command) => await mediator.Send(command.SetId(id)))
     .RequireAuthorization();
 
 app.MapGet("api/passenger",

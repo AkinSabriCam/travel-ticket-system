@@ -3,7 +3,7 @@ using Common.Validation;
 
 namespace Tenant.Domain.Ticket;
 
-public class Ticket : AggregateRoot<Guid>
+public class Ticket : AggregateRoot
 {
     public Guid? ExpeditionId { get; set; }
     public Guid PassengerId { get; set; }

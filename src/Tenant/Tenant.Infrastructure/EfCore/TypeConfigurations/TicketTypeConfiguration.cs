@@ -6,21 +6,18 @@ using Tenant.Domain.Ticket;
 
 namespace Tenant.Infrastructure.EfCore.TypeConfigurations;
 
-public class TicketTypeConfiguration : IEntityTypeConfiguration<Ticket>
+public class TicketTypeConfiguration : BaseTypeConfiguration<Ticket>
 {
-    private readonly Guid _tenantId;
-
-    public TicketTypeConfiguration(Guid tenantId)
+    public TicketTypeConfiguration(Guid tenantId) : base(tenantId)
     {
-        _tenantId = tenantId;
     }
 
     public void Configure(EntityTypeBuilder<Ticket> builder)
     {
+        base.Configure(builder);
         builder.ToTable("tickets");
         builder.HasKey(x => x.Id);
-        builder.HasQueryFilter(x => x.TenantId == _tenantId && !x.IsDeleted);
-
+ 
         builder.Property(x => x.Status).HasConversion<string>();
 
         builder.HasOne(x => x.Passenger)

@@ -8,6 +8,8 @@ public class UserTypeConfiguration : IEntityTypeConfiguration<Domain.User.User>
     public void Configure(EntityTypeBuilder<Domain.User.User> builder)
     {
         builder.HasQueryFilter(x => !x.IsDeleted);
+        builder.Ignore(x => x.Changes);
+
         builder.ToTable("users");
         builder.HasKey(x => x.Id);
 

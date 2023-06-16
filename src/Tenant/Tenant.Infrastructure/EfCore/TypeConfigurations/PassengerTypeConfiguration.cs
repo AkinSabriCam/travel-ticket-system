@@ -4,19 +4,15 @@ using Tenant.Domain.Passenger;
 
 namespace Tenant.Infrastructure.EfCore.TypeConfigurations;
 
-public class PassengerTypeConfiguration : IEntityTypeConfiguration<Passenger>
+public class PassengerTypeConfiguration : BaseTypeConfiguration<Passenger>
 {
-    private readonly Guid _tenantId;
-
-    public PassengerTypeConfiguration(Guid tenantId)
+    public PassengerTypeConfiguration(Guid tenantId) : base(tenantId)
     {
-        _tenantId = tenantId;
     }
 
-    public void Configure(EntityTypeBuilder<Passenger> builder)
+    public override void Configure(EntityTypeBuilder<Passenger> builder)
     {
-        builder.HasQueryFilter(x => x.TenantId == _tenantId && !x.IsDeleted);
-
+        base.Configure(builder);
         builder.ToTable("passengers");
         builder.HasKey(x => x.Id);
         

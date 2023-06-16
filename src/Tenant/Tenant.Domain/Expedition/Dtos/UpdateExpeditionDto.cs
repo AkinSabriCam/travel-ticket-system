@@ -3,6 +3,7 @@
 public class UpdateExpeditionDto : CreateExpeditionDto
 {
     public Guid Id { get; private set; }
+    public ExpeditionStatus Status { get; set; }
 
     public UpdateExpeditionDto SetId(Guid id)
     {

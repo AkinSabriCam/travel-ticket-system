@@ -7,11 +7,12 @@ public class AggregateRoot<TId> : Entity<TId>, IModifiableEntity where TId : IEq
     public DateTime CreatedDate { get; set; }
     public Guid? UpdatedBy { get; set; }
     public DateTime? UpdatedDate { get; set; }
+    public List<Field> Changes { get; } = new();
 }
 
 public class AggregateRoot : AggregateRoot<Guid>
 {
-    public AggregateRoot()
+    protected AggregateRoot()
     {
         Id = Guid.NewGuid();
     }
