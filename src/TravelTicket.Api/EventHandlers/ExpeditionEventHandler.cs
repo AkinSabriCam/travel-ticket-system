@@ -15,7 +15,7 @@ public class ExpeditionEventHandler : BackgroundService
         _serviceProvider = serviceProvider;
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         const string queueName = "expedition_queue";
         var settings = _serviceProvider.GetRequiredService<IOptions<RabbitMqSettings>>();
@@ -23,7 +23,7 @@ public class ExpeditionEventHandler : BackgroundService
 
         var factory = new ConnectionFactory
         {
-            HostName = settings.Value.Host,
+            HostName = settings.Value.Host, 
             Port = settings.Value.Port,
             UserName = settings.Value.Username,
             Password = settings.Value.Password,
@@ -39,19 +39,22 @@ public class ExpeditionEventHandler : BackgroundService
             arguments: null);
 
         var consumer = new EventingBasicConsumer(channel);
-
-        consumer.Received += (model, ea) =>
-        {
-            var body = ea.Body.ToArray();
-            var message = Encoding.UTF8.GetString(body);
-            logger.LogInformation(
-                $"The Message is received from queue. The Queue : {queueName} - The Payload: {message}");
-        };
         channel.BasicConsume(queue: queueName,
             autoAck: true,
             consumer: consumer);
+        
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            consumer.Received += (model, ea) =>
+            {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+                logger.LogInformation(
+                    $"The Message is received from queue. The Queue : {queueName} - The Payload: {message}");
+            };
+            
+            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+        }
 
-
-        return Task.CompletedTask;
     }
 }
