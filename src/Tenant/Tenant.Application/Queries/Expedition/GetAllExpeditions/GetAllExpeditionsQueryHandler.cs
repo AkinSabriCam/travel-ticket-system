@@ -12,12 +12,14 @@ public class GetAllExpeditionsQueryHandler : IRequestHandler<GetAllExpeditionsQu
 {
     private readonly IExpeditionRepository _repository;
     private readonly ICacheService _cacheService;
-    
-    public GetAllExpeditionsQueryHandler(IExpeditionRepository repository, 
-        ICacheService cacheService)
+    private readonly IUser _user;
+
+    public GetAllExpeditionsQueryHandler(IExpeditionRepository repository,
+        ICacheService cacheService, IUser user)
     {
         _repository = repository;
         _cacheService = cacheService;
+        _user = user;
     }
 
     public async Task<List<ExpeditionDto>> Handle(GetAllExpeditionsQuery request, CancellationToken cancellationToken)

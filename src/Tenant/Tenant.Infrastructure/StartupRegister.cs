@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 using Tenant.Application.Commands.Passenger.CreatePassenger;
 using Tenant.Domain;
 using Tenant.Domain.Expedition;
@@ -32,10 +33,9 @@ public static class StartupRegister
         services.AddDbContext<TenantDbContext>(opt =>
         {
             opt.UseNpgsql(configuration.GetConnectionString("Default"))
-                .ReplaceService<IModelCacheKeyFactory, CustomModelCacheKeyFactory>();
-
+             .ReplaceService<IModelCacheKeyFactory, CustomModelCacheKeyFactory>(); 
         });
-
+        
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreatePassengerCommand).Assembly));
         
         services.AddScoped<ITenantUnitOfWork, TenantUnitOfWork>();
@@ -54,7 +54,8 @@ public static class StartupRegister
         services.AddSingleton<IMapper, ServiceMapper>();
         
         AddMapsterMapping(services);
-
+        AddRedisCache(services, configuration);
+        
         services.AddScoped<ICacheService, RedisCacheService>();
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestLoggingPipeline<,>));
     }
@@ -66,5 +67,17 @@ public static class StartupRegister
 
         services.AddSingleton(mappingConfig);
         services.AddSingleton<ICustomMapper, MapsterCustomMapper>();
+    }
+
+    private static void AddRedisCache(IServiceCollection services, IConfiguration configuration)
+    {
+        var redisHost = configuration.GetSection("RedisSettings:Host").Value;
+        var redisPort = configuration.GetSection("RedisSettings:Port").Value;
+        var connectionMultiplexer = ConnectionMultiplexer.Connect(new ConfigurationOptions
+        {
+            EndPoints = { $"{redisHost}:{redisPort}" },
+            AbortOnConnectFail = false,
+        });
+        services.AddSingleton<IConnectionMultiplexer>(connectionMultiplexer);
     }
 }

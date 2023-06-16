@@ -37,7 +37,7 @@ public class User : IUser
         }
         set { }
     }
-
+    
     public string TenantCode
     {
         get

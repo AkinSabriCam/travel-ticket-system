@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Common.Cache;
+using Common.User;
 using StackExchange.Redis;
 
 namespace Tenant.Infrastructure.Redis;
@@ -7,14 +8,17 @@ namespace Tenant.Infrastructure.Redis;
 public class RedisCacheService : ICacheService
 {
     private readonly IConnectionMultiplexer  _redis;
+    private readonly IUser _user;
 
-    public RedisCacheService(IConnectionMultiplexer  redis)
+    public RedisCacheService(IConnectionMultiplexer  redis, IUser user)
     {
         _redis = redis;
+        _user = user;
     }
 
     public async Task Insert(string key, string value)
     {
+        key = $"{_user.TenantCode}_{key}";
         var database = _redis.GetDatabase(0);
         var val = await database.StringGetAsync(key);
 
@@ -26,6 +30,7 @@ public class RedisCacheService : ICacheService
 
     public async Task<TResult> Get<TResult>(string key, Func<Task<TResult>> action)
     {
+        key = $"{_user.TenantCode}_{key}";
         var database = _redis.GetDatabase(0);
         var value = await database.StringGetAsync(key);
 
@@ -43,6 +48,7 @@ public class RedisCacheService : ICacheService
 
     public async Task<List<TResult>> Get<TResult>(string key, Func<Task<List<TResult>>> action)
     {
+        key = $"{_user.TenantCode}_{key}";
         var database = _redis.GetDatabase(0);
         var isExist = database.KeyExists(key);
 
@@ -57,6 +63,7 @@ public class RedisCacheService : ICacheService
 
     public Task InvalidateKey(string key)
     {
+        key = $"{_user.TenantCode}_{key}";
         var database = _redis.GetDatabase(0);
 
         if (database.KeyExists(key))

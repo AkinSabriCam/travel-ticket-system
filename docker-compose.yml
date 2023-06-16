@@ -1,10 +1,10 @@
 ﻿services:
- 
- 
+  
   redis:
     image: "redis:latest"
     container_name: "redis"
- 
+    ports:
+      - "6379:6379"
   posgresql:
     image: "postgres:latest"
     container_name: "posgresql"
@@ -14,7 +14,7 @@
       POSTGRES_DB: "travelticketdb"
     ports:
       - "5433:5432"
- 
+  
   serilog-seq:
     image: "datalust/seq:latest"
     container_name: "serilog-seq"
@@ -22,7 +22,7 @@
       - "5341"
     environment:
       ACCEPT_EULA: "Y"
- 
+  
   keycloak:
     image: "quay.io/keycloak/keycloak:21.0.2"
     container_name: "keycloak"

@@ -53,16 +53,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
-
-builder.Services.Configure<RedisSettings>(builder.Configuration.GetSection("RedisSettings"));
-var redisHost = builder.Configuration.GetSection("RedisSettings:Host").Value;
-var redisPort = builder.Configuration.GetSection("RedisSettings:Port").Value;
-var connectionMultiplexer = ConnectionMultiplexer.Connect(new ConfigurationOptions
-{
-    EndPoints = { $"{redisHost}:{redisPort}" },
-    AbortOnConnectFail = false,
-});
-builder.Services.AddSingleton<IConnectionMultiplexer>(connectionMultiplexer);
 builder.Services.AddScoped<IAuthorizationHandler, AuthorizationHandler>();
 
 var app = builder.Build();
