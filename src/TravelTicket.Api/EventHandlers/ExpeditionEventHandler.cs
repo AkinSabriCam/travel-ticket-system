@@ -1,7 +1,13 @@
 ﻿using System.Text;
+using System.Text.Json;
+using Common.User;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Tenant.Application.Commands.Expedition.UpdateExpedition.Notification;
+using Tenant.Domain;
+using Tenant.Domain.Expedition;
+using Tenant.Domain.Ticket;
 using Tenant.Infrastructure.RabbitMq;
 
 namespace TravelTicket.Api.EventHandlers;
@@ -10,10 +16,12 @@ public class ExpeditionEventHandler : BackgroundService
 {
     private readonly IModel _channel;
     private readonly ILogger<ExpeditionEventHandler> _logger;
-    const string QueueName = "expedition_queue";
+    private const string QueueName = "expedition_queue";
+    private readonly IServiceProvider _serviceProvider;
 
     public ExpeditionEventHandler(IServiceProvider serviceProvider)
     {
+        _serviceProvider = serviceProvider;
         var settings = serviceProvider.GetRequiredService<IOptions<RabbitMqSettings>>();
         _logger = serviceProvider.GetRequiredService<ILogger<ExpeditionEventHandler>>();
 
@@ -44,13 +52,40 @@ public class ExpeditionEventHandler : BackgroundService
             autoDelete: false,
             arguments: null);
 
-        consumer.Received += (_, @event) =>
+        consumer.Received += async (_, @event) =>
         {
             var body = @event.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
             _logger.LogInformation(
                 $"The Message is received from queue. The Queue : {QueueName} - The Payload: {message}");
             consumer.HandleBasicConsumeOk("received");
+            var model = JsonSerializer.Deserialize<UpdatedExpeditionNotification>(message);
+
+            var departureDate = model.Changes.First(x => x.FieldName.Equals(nameof(Expedition.DepartureDate)));
+            var price = model.Changes.First(x => x.FieldName.Equals(nameof(Expedition.UnitPrice)));
+
+            if (departureDate.NewValue.Equals(departureDate.OldValue) && price.NewValue.Equals(price.OldValue))
+                return;
+            
+            var userId = @event.BasicProperties.Headers.First(x => x.Key == "userId");
+            var tenantId = @event.BasicProperties.Headers.First(x => x.Key == "tenantId");
+            var tenantCode = @event.BasicProperties.Headers.First(x => x.Key == "tenantCode");
+
+            await LocalUserContext.SetUser(new LocalUser()
+            {
+                UserId = Guid.Parse(userId.Value.ToString() ?? string.Empty),
+                TenantId = Guid.Parse(tenantId.Value.ToString() ?? string.Empty),
+                TenantCode = tenantCode.ToString()
+            });
+
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            var ticketDomainService = scope.ServiceProvider.GetRequiredService<ITicketDomainService>();
+            var tenantUnitOfWork = scope.ServiceProvider.GetRequiredService<ITenantUnitOfWork>();
+            await ticketDomainService.UpdateByExpeditionId(model.Id, model.Changes);
+            await tenantUnitOfWork.SaveChangesAsync();
+            
+            
+            // we will send information to passengers who bought ticket by mail
         };
 
         _channel.BasicConsume(queue: QueueName,

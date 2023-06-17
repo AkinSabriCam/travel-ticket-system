@@ -92,6 +92,12 @@ public class BaseRepository<TEntity, TId> : IRepository<TEntity, TId>
         return Task.CompletedTask;
     }
 
+    public Task UpdateRange(IList<TEntity> entities)
+    {
+         _dbTable.UpdateRange(entities);
+         return Task.CompletedTask;
+    }
+
     public async Task Delete(TId id)
     {
         var entity = await _dbTable.FirstOrDefaultAsync(x => x.Id.Equals(id));

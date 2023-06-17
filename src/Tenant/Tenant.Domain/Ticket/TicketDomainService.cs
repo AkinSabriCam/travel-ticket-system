@@ -1,4 +1,5 @@
-﻿using Common.Validation;
+﻿using Common.Entity;
+using Common.Validation;
 using Tenant.Domain.Expedition;
 using Tenant.Domain.Ticket.Dtos;
 
@@ -33,8 +34,8 @@ public class TicketDomainService : ITicketDomainService
 
         var result = Result<Ticket>.Ok(entity);
         result.Combine(entity.SetSeatNumber(createDto.SeatNumber));
-        
-        if(result.IsSuccess())
+
+        if (result.IsSuccess())
             await _ticketRepository.Create(entity);
 
         return result;
@@ -79,5 +80,25 @@ public class TicketDomainService : ITicketDomainService
         await _ticketRepository.Update(ticket, ticket.Id);
 
         return Result.Ok();
+    }
+
+    public async Task UpdateByExpeditionId(Guid expeditionId, IList<Field> changes)
+    {
+        var tickets = await _ticketRepository.GetByFilter(x =>
+            x.ExpeditionId.Equals(expeditionId) && x.Status != TicketStatus.Cancelled);
+        
+        tickets.ForEach(ticket =>
+        {
+            ticket.AddHistory();
+            ticket.DepartureDate =
+                Convert.ToDateTime(changes.First(x => x.FieldName == nameof(Expedition.Expedition.DepartureDate))
+                    .NewValue);
+            ticket.Price = Convert.ToInt16(changes
+                .First(x => x.FieldName == nameof(Expedition.Expedition.UnitPrice))
+                .NewValue);
+
+        });
+
+        await _ticketRepository.UpdateRange(tickets);
     }
 }
