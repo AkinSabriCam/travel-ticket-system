@@ -12,7 +12,7 @@ public class TicketTypeConfiguration : BaseTypeConfiguration<Ticket>
     {
     }
 
-    public void Configure(EntityTypeBuilder<Ticket> builder)
+    public override void Configure(EntityTypeBuilder<Ticket> builder)
     {
         base.Configure(builder);
         builder.ToTable("tickets");

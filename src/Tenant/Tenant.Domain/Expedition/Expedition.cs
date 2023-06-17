@@ -131,7 +131,7 @@ public class Expedition : AggregateRoot
     #endregion
 
 
-    public List<Ticket.Ticket> Tickets { get; set; }
+    public virtual List<Ticket.Ticket> Tickets { get; set; } = new();
 
     public Result SetExpeditionNo(string expeditionNo)
     {
