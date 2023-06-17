@@ -8,53 +8,55 @@ namespace TravelTicket.Api.EventHandlers;
 
 public class ExpeditionEventHandler : BackgroundService
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IModel _channel;
+    private readonly ILogger<ExpeditionEventHandler> _logger;
+    const string QueueName = "expedition_queue";
 
     public ExpeditionEventHandler(IServiceProvider serviceProvider)
     {
-        _serviceProvider = serviceProvider;
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        const string queueName = "expedition_queue";
-        var settings = _serviceProvider.GetRequiredService<IOptions<RabbitMqSettings>>();
-        var logger = _serviceProvider.GetRequiredService<ILogger<ExpeditionEventHandler>>();
+        var settings = serviceProvider.GetRequiredService<IOptions<RabbitMqSettings>>();
+        _logger = serviceProvider.GetRequiredService<ILogger<ExpeditionEventHandler>>();
 
         var factory = new ConnectionFactory
         {
-            HostName = settings.Value.Host, 
+            HostName = settings.Value.Host,
             Port = settings.Value.Port,
             UserName = settings.Value.Username,
             Password = settings.Value.Password,
             AutomaticRecoveryEnabled = true,
         };
-        using var connection = factory.CreateConnection();
-        var channel = connection.CreateModel();
 
-        channel.QueueDeclare(queue: queueName,
+        _channel = factory.CreateConnection().CreateModel();
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        // here is a sample for scheduled process 
+        // while (!stoppingToken.IsCancellationRequested)
+        // {
+        //     await Task.Delay(10000, stoppingToken);
+        // }
+
+        var consumer = new EventingBasicConsumer(_channel);
+        _channel.QueueDeclare(queue: QueueName,
             durable: false,
             exclusive: false,
             autoDelete: false,
             arguments: null);
 
-        var consumer = new EventingBasicConsumer(channel);
-        channel.BasicConsume(queue: queueName,
+        consumer.Received += (_, @event) =>
+        {
+            var body = @event.Body.ToArray();
+            var message = Encoding.UTF8.GetString(body);
+            _logger.LogInformation(
+                $"The Message is received from queue. The Queue : {QueueName} - The Payload: {message}");
+            consumer.HandleBasicConsumeOk("received");
+        };
+
+        _channel.BasicConsume(queue: QueueName,
             autoAck: true,
             consumer: consumer);
-        
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            consumer.Received += (model, ea) =>
-            {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                logger.LogInformation(
-                    $"The Message is received from queue. The Queue : {queueName} - The Payload: {message}");
-            };
-            
-            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
-        }
 
+        await Task.CompletedTask;
     }
 }

@@ -11,7 +11,7 @@ namespace Tenant.Infrastructure.RabbitMq;
 public class RabbitMqEventPublishService : IEventPublishService
 {
     private readonly RabbitMqSettings _settings;
-    private readonly IModel _rabbitMqChannel;
+    private readonly IConnection _connection;
     private readonly IUser _user;
     private readonly ILogger<RabbitMqEventPublishService> _logger;
 
@@ -21,7 +21,7 @@ public class RabbitMqEventPublishService : IEventPublishService
         _user = user;
         _logger = logger;
         _settings = settings.Value;
-        _rabbitMqChannel = connection.CreateModel();
+        _connection = connection;
     }
 
     public Task Publish(string queueName, object payload)
@@ -29,9 +29,9 @@ public class RabbitMqEventPublishService : IEventPublishService
         var bodyString = JsonSerializer.Serialize(payload);
         try
         {
-            using (_rabbitMqChannel)
+            using (var rabbitMqChannel = _connection.CreateModel())
             {
-                _rabbitMqChannel.QueueDeclare(queue: queueName,
+                rabbitMqChannel.QueueDeclare(queue: queueName,
                     durable: false,
                     exclusive: false,
                     autoDelete: false,
@@ -39,7 +39,7 @@ public class RabbitMqEventPublishService : IEventPublishService
 
                 var body = Encoding.UTF8.GetBytes(bodyString);
 
-                var properties = _rabbitMqChannel.CreateBasicProperties();
+                var properties = rabbitMqChannel.CreateBasicProperties();
                 var headers = new Dictionary<string, object>()
                 {
                     { "userId", _user.UserId.ToString() },
@@ -48,10 +48,13 @@ public class RabbitMqEventPublishService : IEventPublishService
                 };
                 properties.Headers = headers;
 
-                _rabbitMqChannel.BasicPublish(exchange: string.Empty,
+                rabbitMqChannel.BasicPublish(exchange: string.Empty,
                     routingKey: queueName,
                     basicProperties: properties,
                     body: body);
+                
+                rabbitMqChannel.Close();
+                _connection.Close();
             }
 
             _logger.LogInformation(
