@@ -17,9 +17,9 @@
       RABBITMQ_DEFAULT_USER: "rabbitmq"
       RABBITMQ_DEFAULT_PASS: "rabbitmq"
     
-  posgresql:
+  postgresql:
     image: "postgres:latest"
-    container_name: "posgresql"
+    container_name: "postgresql"
     environment:
       POSTGRES_USER: "dbadmin"
       POSTGRES_PASSWORD: "dbadmin"
@@ -31,7 +31,8 @@
     image: "datalust/seq:latest"
     container_name: "serilog-seq"
     ports:
-      - "5341"
+      - "5341:5341"
+      - "4326:80"
     environment:
       ACCEPT_EULA: "Y"
   

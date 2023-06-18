@@ -79,11 +79,11 @@ public class ExpeditionEventHandler : BackgroundService
                     TenantCode = tenantCode.Value.ToString()
                 });
 
-                await using var scope = _serviceProvider.CreateAsyncScope();
-                var ticketDomainService = scope.ServiceProvider.GetRequiredService<ITicketDomainService>();
-                var tenantUnitOfWork = scope.ServiceProvider.GetRequiredService<ITenantUnitOfWork>();
-                await ticketDomainService.UpdateByExpeditionId(model.Id, model.Changes);
-                await tenantUnitOfWork.SaveChangesAsync();
+                await UpdateTickets(model);
+                
+                // we can send information to passengers who bought a ticket by mail also
+                // we can add activity log data about expedition
+                // we can execute another process that we want about that event
 
             }
             catch (Exception e)
@@ -91,7 +91,6 @@ public class ExpeditionEventHandler : BackgroundService
                 Console.WriteLine(e);
             }
             
-            // we will send information to passengers who bought ticket by mail
         };
 
         _channel.BasicConsume(queue: QueueName,
@@ -99,5 +98,14 @@ public class ExpeditionEventHandler : BackgroundService
             consumer: consumer);
 
         await Task.CompletedTask;
+    }
+
+    private async Task UpdateTickets(UpdatedExpeditionNotification model)
+    {
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        var ticketDomainService = scope.ServiceProvider.GetRequiredService<ITicketDomainService>();
+        var tenantUnitOfWork = scope.ServiceProvider.GetRequiredService<ITenantUnitOfWork>();
+        await ticketDomainService.UpdateByExpeditionId(model.Id, model.Changes);
+        await tenantUnitOfWork.SaveChangesAsync();
     }
 }
