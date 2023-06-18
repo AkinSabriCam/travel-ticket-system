@@ -8,7 +8,7 @@ public class Result
     {
         return new Result();
     }
-    
+
     public static Result Fail(string message)
     {
         var result = new Result();
@@ -16,22 +16,28 @@ public class Result
         return result;
     }
 
-    public IEnumerable<string> GetMessages()
+    public List<string> GetErrors()
     {
         return _messages;
     }
-    
+
     public Result AddError(string message)
     {
         _messages ??= new List<string>();
-        
+
         _messages.Add(message);
         return this;
     }
-    
+
     public Result Combine(Result result)
     {
-        _messages.AddRange(result.GetMessages());
+        _messages.AddRange(result.GetErrors());
+        return this;
+    }
+    
+    public Result Combine<T>(Result<T> result) where T : class
+    {
+        _messages.AddRange(result.GetErrors());
         return this;
     }
 
@@ -42,23 +48,20 @@ public class Result
 
         throw new ValidationException(string.Join("\n", _messages));
     }
-    public bool IsSuccess() =>  _messages == null || !_messages.Any();
+
+    public bool IsSuccess() => _messages == null || !_messages.Any();
     public bool IsFail() => _messages != null && _messages.Any();
 }
 
-
-
-
 public class Result<T> where T : class
 {
-    private List<string> _messages = new() ;
-    public T Value;
-
+    private List<string> _messages = new();
+    public T Value { get; set; }
     public static Result<T> Ok(T entity)
     {
-        return new Result<T> {Value = entity};
+        return new Result<T> { Value = entity };
     }
-    
+
     public static Result<T> Fail(string message)
     {
         var result = new Result<T>();
@@ -66,31 +69,31 @@ public class Result<T> where T : class
         return result;
     }
     
-    private IEnumerable<string> GetMessages()
+    public List<string> GetErrors()
     {
         return _messages;
     }
-    
+
     public Result<T> AddError(string message)
     {
         _messages ??= new List<string>();
-        
+
         _messages.Add(message);
         return this;
     }
-    
+
     public Result<T> Combine(Result<T> result)
     {
-        _messages.AddRange(result.GetMessages());
+        _messages.AddRange(result.GetErrors());
         return this;
     }
     
     public Result<T> Combine(Result result)
     {
-        _messages.AddRange(result.GetMessages());
+        _messages.AddRange(result.GetErrors());
         return this;
     }
-    
+
     public void ValidateAndThrow()
     {
         if (_messages == null || !_messages.Any())
@@ -99,7 +102,6 @@ public class Result<T> where T : class
         throw new ValidationException(string.Join("\n", _messages));
     }
     
-    public bool IsSuccess() =>  _messages == null || !_messages.Any();
+    public bool IsSuccess() => _messages == null || !_messages.Any();
     public bool IsFail() => _messages != null && _messages.Any();
 }
-

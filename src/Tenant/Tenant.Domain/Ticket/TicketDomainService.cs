@@ -49,7 +49,7 @@ public class TicketDomainService : ITicketDomainService
 
         var result = Result.Ok();
         if (ticket.Status != TicketStatus.Reserved)
-            result.AddError("Ticket status should be reserved");
+            result.AddError("Ticket status should be reserved!");
 
         if (!expedition.IsAvailableForSale())
             result.AddError("This Expedition is not available for sale!");
@@ -70,7 +70,7 @@ public class TicketDomainService : ITicketDomainService
 
         var result = Result.Ok();
         if (ticket.Status == TicketStatus.Cancelled)
-            result.AddError("Ticket status should be reserved or purchased");
+            result.AddError("Ticket status should be reserved or purchased!");
 
         if (result.IsFail())
             return result;
