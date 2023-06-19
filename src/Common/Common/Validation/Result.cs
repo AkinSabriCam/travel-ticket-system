@@ -15,6 +15,18 @@ public class Result
         result.AddError(message);
         return result;
     }
+    
+    public static Result<TResult> Ok<TResult>(TResult value) where TResult : class
+    {
+        return new Result<TResult>(){Value = value};
+    }
+
+    public static Result<TResult> Fail<TResult>(string message) where TResult : class
+    {
+        var result = new Result<TResult>();
+        result.AddError(message);
+        return result;
+    }
 
     public List<string> GetErrors()
     {
@@ -53,55 +65,7 @@ public class Result
     public bool IsFail() => _messages != null && _messages.Any();
 }
 
-public class Result<T> where T : class
+public class Result<T> : Result where T : class
 {
-    private List<string> _messages = new();
     public T Value { get; set; }
-    public static Result<T> Ok(T entity)
-    {
-        return new Result<T> { Value = entity };
-    }
-
-    public static Result<T> Fail(string message)
-    {
-        var result = new Result<T>();
-        result.AddError(message);
-        return result;
-    }
-    
-    public List<string> GetErrors()
-    {
-        return _messages;
-    }
-
-    public Result<T> AddError(string message)
-    {
-        _messages ??= new List<string>();
-
-        _messages.Add(message);
-        return this;
-    }
-
-    public Result<T> Combine(Result<T> result)
-    {
-        _messages.AddRange(result.GetErrors());
-        return this;
-    }
-    
-    public Result<T> Combine(Result result)
-    {
-        _messages.AddRange(result.GetErrors());
-        return this;
-    }
-
-    public void ValidateAndThrow()
-    {
-        if (_messages == null || !_messages.Any())
-            return;
-
-        throw new ValidationException(string.Join("\n", _messages));
-    }
-    
-    public bool IsSuccess() => _messages == null || !_messages.Any();
-    public bool IsFail() => _messages != null && _messages.Any();
 }

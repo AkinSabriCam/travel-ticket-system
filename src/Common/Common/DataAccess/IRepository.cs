@@ -16,6 +16,5 @@ public interface IRepository<TEntity, TId> where TEntity : Entity<TId> where TId
     Task Create(TEntity entity);
     Task Update(TEntity entity, TId id);
     Task UpdateRange(IList<TEntity> entity);
-
     Task Delete(TId id);
 }

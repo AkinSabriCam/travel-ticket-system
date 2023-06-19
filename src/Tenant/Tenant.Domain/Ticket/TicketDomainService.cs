@@ -21,7 +21,7 @@ public class TicketDomainService : ITicketDomainService
         var expedition = await _expeditionRepository.GetById(createDto.ExpeditionId, includes: x => x.Tickets);
 
         if (!expedition.IsAvailableForSale())
-            return Result<Ticket>.Fail("This Expedition is not available for sale!");
+            return Result.Fail<Ticket>("This Expedition is not available for sale!");
 
         var entity = new Ticket
         {
@@ -32,7 +32,7 @@ public class TicketDomainService : ITicketDomainService
             Price = expedition.UnitPrice
         };
 
-        var result = Result<Ticket>.Ok(entity);
+        var result = Result.Ok(entity);
         result.Combine(entity.SetSeatNumber(createDto.SeatNumber));
 
         if (result.IsSuccess())

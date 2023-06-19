@@ -15,7 +15,7 @@ public class TenantDomainService : ITenantDomainService
     public async Task<Result<Tenant>> Create(CreateTenantDto dto, Guid userId)
     {
         if (await _tenantRepository.IsCodeExist(dto.Code))
-            return Result<Tenant>.Fail("The Tenant Code Is Already Exist!");
+            return Result.Fail<Tenant>("The Tenant Code Is Already Exist!");
         
         var tenant = new Tenant()
         {
