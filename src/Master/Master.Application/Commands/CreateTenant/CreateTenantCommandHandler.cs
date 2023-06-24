@@ -21,8 +21,11 @@ public class CreateTenantCommandHandler : IRequestHandler<CreateTenantCommand, T
     private readonly ITenantAppService _tenantAppService;
     private readonly IMasterUnitOfWork _masterUnitOfWork;
 
-    public CreateTenantCommandHandler(ITenantDomainService tenantDomainService, IMasterUnitOfWork masterUnitOfWork,
-        IIdentityHttpService identityHttpService, ITenantAppService tenantAppService, IUserRepository userRepository)
+    public CreateTenantCommandHandler(ITenantDomainService tenantDomainService, 
+        IMasterUnitOfWork masterUnitOfWork,
+        IIdentityHttpService identityHttpService, 
+        ITenantAppService tenantAppService, 
+        IUserRepository userRepository)
     {
         _tenantDomainService = tenantDomainService;
         _masterUnitOfWork = masterUnitOfWork;

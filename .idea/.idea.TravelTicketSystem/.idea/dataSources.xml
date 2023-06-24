@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:postgresql://localhost:5433/travelticketdb</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="test_travelticketdb@localhost" uuid="bdb84904-2166-4945-a0e5-3be32dcf3248">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5434/test_travelticketdb</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
