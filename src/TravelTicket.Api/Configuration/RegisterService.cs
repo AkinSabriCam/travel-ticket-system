@@ -25,15 +25,18 @@ public static class RegisterService
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, o =>
             {
-                var baseUrl = configuration.GetSection("KeycloakIdentity:BaseUrl").Value;
+                var authority = configuration.GetSection("KeycloakIdentity:Authority").Value;
+                var metadataAddress = configuration.GetSection("KeycloakIdentity:MetadataAddress").Value;
                 var audience = configuration.GetSection("KeycloakIdentity:Audience").Value;
-                o.MetadataAddress = $"{baseUrl}/realms/travel_ticket/.well-known/openid-configuration";
-                o.Authority = $"{baseUrl}/realms/";
+                
+                o.MetadataAddress = metadataAddress;
+                o.Authority = authority;
+                o.Audience = audience;
                 o.RequireHttpsMetadata = false;
                 o.TokenValidationParameters = new TokenValidationParameters()
                 {
                     RequireAudience = true,
-                    ValidAudience = audience,
+                    ValidIssuer = audience,
                 };
             });
 

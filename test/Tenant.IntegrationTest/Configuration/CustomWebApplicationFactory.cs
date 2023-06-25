@@ -9,6 +9,7 @@ using Master.Application.HttpServices;
 using Master.Domain.Tenant.Dto;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,31 +21,16 @@ namespace Tenant.IntegrationTest.Configuration;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private readonly Guid _tenantId = Guid.NewGuid();
-    private readonly Guid _userId = Guid.NewGuid();
-    private const string TenantCode = "TESTEN";
-
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        var process = new Process();
-        var startInfo = new ProcessStartInfo
-        {
-            WorkingDirectory = Directory.GetCurrentDirectory(),
-            FileName = "cmd.exe",
-            Arguments = "/c docker-compose up",
-        };
-        process.StartInfo = startInfo;
-        process.Start();
+        RunComposeFile();
 
-        Task.Delay(10000).Wait();
-        
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddEnvironmentVariables()
             .Build();
 
         builder.UseConfiguration(configuration);
-        
         builder.ConfigureServices(services =>
         {
             services.AddSingleton<IIdentityHttpService, FakeIdentityService>();
@@ -56,45 +42,51 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 LastName = "Doe",
                 Country = "türkiye",
                 City = "istanbul",
-                Code = TenantCode,
+                Code = TestStaticFields.TenantCode,
                 Email = "testtenant@gmail.com"
             }).Wait();
         });
-        
+
+        builder.ConfigureTestServices(services =>
+        {
+            services
+                .AddAuthentication("test")
+                .AddScheme<TestAuthHandlerOptions, TestAuthenticationHandler>("test", _ => { });
+        });
+
         base.ConfigureWebHost(builder);
     }
 
     protected override void ConfigureClient(HttpClient client)
     {
         base.ConfigureClient(client);
-        // client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", GenerateJwtToken());
+        var token = GenerateJwtToken();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("test", token);
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
-    private string GenerateJwtToken()
+    private static string GenerateJwtToken()
     {
-        var key = "ASvAsdTe12qwy4asdawewar342fegdfdsfsdfs"u8.ToArray();
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            
-            // Issuer = "http://localhost:6743/realms/",
-            // Audience = "http://localhost:6743/realms/",
-            Expires = DateTime.UtcNow.AddMinutes(30),
-            SigningCredentials =
-                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-            Subject = new ClaimsIdentity(new[]
+        var key = "Azxfe5vaw3R2asdzasf3"u8.ToArray();
+        var token = new JwtSecurityToken(
+            issuer: "http://localhost/",
+            audience: "http://localhost",
+            expires: DateTime.UtcNow.AddMinutes(30),
+            claims: new Claim[]
             {
-                new Claim("userId", _userId.ToString()),
-                new Claim("tenantId", _tenantId.ToString()),
-                new Claim("tenantCode", TenantCode),
-                new Claim("memberOf", "BackOffice")
-            })
-        };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
+                new("userId", TestStaticFields.UserId.ToString()),
+                new("tenantId", TestStaticFields.TenantId.ToString()),
+                new("tenantCode", TestStaticFields.TenantCode),
+                new("memberOf", "BackOffice"),
+            },
+            signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256Signature));
+
+        var tokenHandler = new JwtSecurityTokenHandler();
         return tokenHandler.WriteToken(token);
     }
 
-    private async Task CreateTestTenant(IServiceCollection services, CreateTenantDto createTenantDto)
+    private static async Task CreateTestTenant(IServiceCollection services, CreateTenantDto createTenantDto)
     {
         try
         {
@@ -103,13 +95,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             var tenantDbContext = scope.ServiceProvider.GetRequiredService<TenantDbContext>();
 
             await tenantDbContext.Database.MigrateAsync();
-            await tenantAppService.AddTenant(createTenantDto, _tenantId);
+            await tenantAppService.AddTenant(createTenantDto, TestStaticFields.TenantId);
 
             await LocalUserContext.SetUser(new LocalUser()
             {
-                TenantCode = TenantCode,
-                TenantId = _tenantId,
-                UserId = _userId
+                TenantCode = TestStaticFields.TenantCode,
+                TenantId = TestStaticFields.TenantId,
+                UserId = TestStaticFields.UserId
             });
 
             tenantAppService = scope.ServiceProvider.GetRequiredService<ITenantAppService>();
@@ -120,12 +112,45 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 Email = createTenantDto.Email,
                 Username = createTenantDto.Email,
                 Password = createTenantDto.Password,
-            }, _userId);
+            }, TestStaticFields.UserId);
         }
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
             throw;
         }
+    }
+
+    private static void RunComposeFile()
+    {
+        var process = new Process();
+        var startInfo = new ProcessStartInfo
+        {
+            WorkingDirectory = Directory.GetCurrentDirectory(),
+            FileName = "cmd.exe",
+            Arguments = "/c docker-compose up -d",
+        };
+        process.StartInfo = startInfo;
+        process.Start();
+        process.WaitForExitAsync().Wait();
+        Task.Delay(5000).Wait();
+    }
+
+    public override ValueTask DisposeAsync()
+    {
+        // Process.Start("cmd.exe", "/ docker-compose down");
+
+        var process = new Process();
+        var startInfo = new ProcessStartInfo
+        {
+            WorkingDirectory = Directory.GetCurrentDirectory(),
+            FileName = "cmd.exe",
+            Arguments = "/c docker-compose down",
+        };
+        process.StartInfo = startInfo;
+        process.Start();
+        process.WaitForExitAsync().Wait();
+
+        return base.DisposeAsync();
     }
 }

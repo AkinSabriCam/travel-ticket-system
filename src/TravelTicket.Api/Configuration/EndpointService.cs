@@ -1,6 +1,5 @@
 ﻿using Master.Application.Commands.CreateTenant;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Tenant.Application.Commands.Expedition.CreateExpedition;
 using Tenant.Application.Commands.Expedition.UpdateExpedition;
@@ -23,7 +22,7 @@ public static class EndpointService
 {
     public static void AddAllEndpoints(this WebApplication app)
     {
-        app.MapGet("api/hello-world", () => "helloworld");
+        app.MapGet("api/hello-world", () => "helloworld").RequireAuthorization();
 
         app.MapGet("api/expedition",
             async (IMediator mediator) => await mediator.Send(new GetAllExpeditionsQuery())).RequireAuthorization();
