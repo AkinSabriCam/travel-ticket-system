@@ -21,7 +21,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Run Unit Tests
-        run: 
+        run: |
             cd ../../test/Tenant.UnitTest
             dotnet test --no-build --verbosity normal
           
@@ -34,7 +34,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Run Unit Tests
-        run:
+        run: |
           cd ../../test/Tenant.IntegrationTest
           dotnet test --no-build --verbosity normal      
           
