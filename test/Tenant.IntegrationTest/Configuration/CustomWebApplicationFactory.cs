@@ -133,14 +133,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
-            var process = Process.Start("/bin/bash.exe", "/c docker-compose up -d");
+            var process = Process.Start("/bin/bash", "-c \"docker-compose up -d\"");
             process.WaitForExitAsync().Wait();
             Task.Delay(10000).Wait();
             return;
         }
 
         throw new Exception("Unsupported os to run this integration test project");
-
     }
 
     public override ValueTask DisposeAsync()
@@ -154,7 +153,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
-            var process = Process.Start("/bin/bash", "/c docker-compose down");
+            var process = Process.Start("/bin/bash", "-c \"docker-compose down\"");
             process.WaitForExitAsync().Wait();
             return base.DisposeAsync();
         }
