@@ -24,5 +24,6 @@ public class ExpeditionEpTests : BaseEpTest
             new StringContent(JsonSerializer.Serialize(command), Encoding.UTF8, "application/json"));
 
         Assert.True(result.IsSuccessStatusCode);
+        Assert.Fail("failed");
     }
 }

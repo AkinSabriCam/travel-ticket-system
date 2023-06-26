@@ -35,9 +35,8 @@ jobs:
           dotnet-version: 6.0.x
       - name: Go To Integration Test Project
         run:  cd ./test/Tenant.IntegrationTest
-      - name: Run Unit Test 
+      - name: Run Integration Tests 
         run:  dotnet test --no-build --verbosity normal
-  
   
   build:
     runs-on: ubuntu-latest
