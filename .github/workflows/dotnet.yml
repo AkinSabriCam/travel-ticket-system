@@ -20,10 +20,10 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
+      - name: Go To Unit Test Project
+        run: cd ../../test/Tenant.UnitTest
       - name: Run Unit Tests
-        run: |
-            cd ../../test/Tenant.UnitTest
-            dotnet test --no-build --verbosity normal
+        run: dotnet test --no-build --verbosity normal
           
   integration-test:
     runs-on: ubuntu-latest
@@ -33,11 +33,12 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
-      - name: Run Unit Tests
-        run: |
-          cd ../../test/Tenant.IntegrationTest
-          dotnet test --no-build --verbosity normal      
-          
+      - name: Go To Integration Test Project
+        run:  cd ../../test/Tenant.IntegrationTest
+      - name: Run Unit Test 
+        run:  dotnet test --no-build --verbosity normal
+  
+  
   build:
     runs-on: ubuntu-latest
     steps:
