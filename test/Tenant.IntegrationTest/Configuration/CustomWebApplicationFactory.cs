@@ -128,6 +128,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             var process = Process.Start("cmd.exe", "/c docker-compose up -d");
             process.WaitForExitAsync().Wait();
             Task.Delay(10000).Wait();
+            return;
         }
         
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
@@ -135,7 +136,11 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             var process = Process.Start("/bin/bash", "/c docker-compose up -d");
             process.WaitForExitAsync().Wait();
             Task.Delay(10000).Wait();
+            return;
         }
+
+        throw new Exception("Unsupported os for the run this integration test project");
+
     }
 
     public override ValueTask DisposeAsync()
