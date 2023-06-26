@@ -20,8 +20,8 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
+          path: ./test/Tenant.UnitTest
       - name: Run Unit Tests
-        path: ./test/Tenant.UnitTest
         run: dotnet test --no-build --verbosity normal
           
   integration-test:
@@ -32,8 +32,8 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
+          path: ./test/Tenant.IntegrationTest
       - name: Run Integration Tests
-        path: ./test/Tenant.IntegrationTest
         run: dotnet test --no-build --verbosity normal
   
   build:
