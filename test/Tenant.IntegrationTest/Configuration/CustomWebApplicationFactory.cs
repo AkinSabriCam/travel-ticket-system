@@ -123,34 +123,39 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     private static void RunComposeFile()
     {
-        var process = new Process();
-        var startInfo = new ProcessStartInfo
+        if (OperatingSystem.IsWindows())
         {
-            WorkingDirectory = Directory.GetCurrentDirectory(),
-            FileName = "cmd.exe",
-            Arguments = "/c docker-compose up -d",
-        };
-        process.StartInfo = startInfo;
-        process.Start();
-        process.WaitForExitAsync().Wait();
-        Task.Delay(10000).Wait();
+            var process = Process.Start("cmd.exe", "/c docker-compose up -d");
+            process.WaitForExitAsync().Wait();
+            Task.Delay(10000).Wait();
+        }
+        
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            var process = Process.Start("/bin/bash", "/c docker-compose up -d");
+            process.WaitForExitAsync().Wait();
+            Task.Delay(10000).Wait();
+        }
     }
 
     public override ValueTask DisposeAsync()
     {
-        // Process.Start("cmd.exe", "/ docker-compose down");
-
-        var process = new Process();
-        var startInfo = new ProcessStartInfo
+        if (OperatingSystem.IsWindows())
         {
-            WorkingDirectory = Directory.GetCurrentDirectory(),
-            FileName = "cmd.exe",
-            Arguments = "/c docker-compose down",
-        };
-        process.StartInfo = startInfo;
-        process.Start();
-        process.WaitForExitAsync().Wait();
-
+            var process = Process.Start("cmd.exe", "/c docker-compose down");
+            process.WaitForExitAsync().Wait();
+            return base.DisposeAsync();
+        }
+        
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            var process = Process.Start("/bin/bash", "/c docker-compose down");
+            process.WaitForExitAsync().Wait();
+            return base.DisposeAsync();
+        }
+        
+        Console.WriteLine("Unsupported operating system.");
         return base.DisposeAsync();
+
     }
 } 
