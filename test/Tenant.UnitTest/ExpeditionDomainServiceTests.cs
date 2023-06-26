@@ -42,7 +42,6 @@ public class ExpeditionDomainServiceTests
         Assert.Equal(result.Value.DepartureDate, createExpeditionDto.DepartureDate);
         Assert.Equal(result.Value.SeatCount, createExpeditionDto.SeatCount);
         Assert.Equal(result.Value.UnitPrice, createExpeditionDto.UnitPrice);
-        Assert.Fail("failed");
     }
     
     [Fact]
