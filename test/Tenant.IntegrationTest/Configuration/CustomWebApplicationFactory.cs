@@ -133,7 +133,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         process.StartInfo = startInfo;
         process.Start();
         process.WaitForExitAsync().Wait();
-        Task.Delay(5000).Wait();
+        Task.Delay(10000).Wait();
     }
 
     public override ValueTask DisposeAsync()
