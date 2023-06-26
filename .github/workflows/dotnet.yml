@@ -10,10 +10,36 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  unit-test:
 
     runs-on: ubuntu-latest
 
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+      - name: Run Unit Tests
+        run: |
+            cd .././test/Tenant.UnitTest
+            dotnet test --no-build --verbosity normal
+          
+  integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+      - name: Run Unit Tests
+        run: |
+          cd .././test/Tenant.IntegrationTest
+          dotnet test --no-build --verbosity normal      
+          
+  build:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
@@ -24,5 +50,3 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
