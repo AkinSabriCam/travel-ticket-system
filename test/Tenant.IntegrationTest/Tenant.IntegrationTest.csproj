@@ -7,17 +7,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.8" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
-        <PackageReference Include="xunit" Version="2.4.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.8"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2"/>
+        <PackageReference Include="xunit" Version="2.4.2"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\TravelTicket.Api\TravelTicket.Api.csproj" />
+        <ProjectReference Include="..\..\src\TravelTicket.Api\TravelTicket.Api.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -28,9 +28,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="appsettings.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="docker-compose.yml">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+
     </ItemGroup>
 
 </Project>

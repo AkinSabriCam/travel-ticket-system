@@ -139,7 +139,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             return;
         }
 
-        throw new Exception("Unsupported os for the run this integration test project");
+        throw new Exception("Unsupported os to run this integration test project");
 
     }
 
