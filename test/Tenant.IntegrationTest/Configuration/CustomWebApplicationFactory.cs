@@ -133,8 +133,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
-            Console.WriteLine("you are here!");
-            var process = Process.Start("/bin/bash", "/c docker-compose up -d");
+            var process = Process.Start("/bin/bash.exe", "/c docker-compose up -d");
             process.WaitForExitAsync().Wait();
             Task.Delay(10000).Wait();
             return;
