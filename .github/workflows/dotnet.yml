@@ -45,9 +45,14 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
+      
       - name: Set up Docker
-        uses: docker/setup-docker@v2
+        run: |
+          sudo apt-get update
+          sudo apt-get install docker.io -y
+
       - name: Build
         run: dotnet build
+        
       - name: Run Integration Tests
         run: dotnet test --no-build --verbosity normal ./test/Tenant.IntegrationTest
